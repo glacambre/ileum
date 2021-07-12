@@ -7,7 +7,6 @@ function On_Stdin (chan, content, name)
   if len(a:content) == 1 && a:content[0] == ''
     call Do_Close()
   endif
-  echo a:content
   let r = rpcrequest(g:channel, 'nvim_call_function', 'nvim_buf_set_lines', [0, -1, -1, v:false, a:content])
 endfunction
 

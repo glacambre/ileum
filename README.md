@@ -1,4 +1,4 @@
-Ileum is a zsh plugin that catches all commands starting with a colon an runs them in the parent neovim instance. To install Ileum, clone this repository somewhere on your disk and add `source /path/to/ileum.sh` to your `.zshrc`.
+Ileum is a zsh plugin that catches all commands starting with a colon and runs them in the parent neovim instance. To install Ileum, clone this repository somewhere on your disk and add `source /path/to/ileum.sh` to your `.zshrc`.
 
 Example usage:
 
