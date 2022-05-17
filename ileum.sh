@@ -10,10 +10,12 @@ command_not_found_handler() {
       args="${(qqq)@}"
       pwd="${(qqq)PWD}"
       nvim -u NONE -i NONE --headless --cmd "source $ILEUM_PLUGIN_DIR/ileum.vim" --cmd ":call Ileum($pwd,'$ADDR',$args)"
+      exit $?
     else
       echo "ileum: NVIM_LISTEN_ADDRESS and NVIM undefined"
     fi
   else
     echo "command not found: $@"
   fi
+  exit 1
 }
