@@ -1,9 +1,25 @@
 let g:last_line = ""
 let g:exit_code = 0
+let g:cwd_backup = ""
+
+function Maybe_Restore_Cwd ()
+  if g:cwd_backup == rpcrequest(g:channel, 'nvim_call_function', 'getcwd', [])
+    " If the ileum cwd did not get overwritten, this means that we might need
+    " to restore the previous current working dir.
+    let autochdir = rpcrequest(g:channel, 'nvim_get_option', 'autochdir')
+    " There is one case where we should not though: if autochdir is set, it's
+    " likely that the reason the ileum working dir did not get overwritten is
+    " that it was the same location autochdir would have moved to.
+    if !autochdir
+      let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. g:cwd_backup)
+    endif
+  endif
+endfunction
 
 function Do_Close ()
-    call chanclose(g:channel)
-    execute("cq! " .. g:exit_code)
+  call Maybe_Restore_Cwd()
+  call chanclose(g:channel)
+  execute("cq! " .. g:exit_code)
 endfunction
 
 function On_Stdin (chan, content, name)
@@ -23,7 +39,8 @@ endfunction
 
 function! Ileum (pwd, addr, cmd) abort
   let g:channel = sockconnect('pipe', a:addr, { 'rpc': v:true })
-  let r = rpcrequest(g:channel, 'nvim_command', 'lcd ' .. a:pwd)
+  let g:cwd_backup = rpcrequest(g:channel, 'nvim_call_function', 'getcwd', [])
+  let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. a:pwd)
   try
     let r = rpcrequest(g:channel, 'nvim_command', a:cmd)
   catch
