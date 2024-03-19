@@ -11,7 +11,7 @@ function Maybe_Restore_Cwd ()
     " likely that the reason the ileum working dir did not get overwritten is
     " that it was the same location autochdir would have moved to.
     if !autochdir
-      let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. g:cwd_backup)
+      let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. fnameescape(g:cwd_backup))
     endif
   endif
 endfunction
@@ -40,7 +40,7 @@ endfunction
 function! Ileum (pwd, addr, cmd) abort
   let g:channel = sockconnect('pipe', a:addr, { 'rpc': v:true })
   let g:cwd_backup = rpcrequest(g:channel, 'nvim_call_function', 'getcwd', [])
-  let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. a:pwd)
+  let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. fnameescape(a:pwd))
   try
     let r = rpcrequest(g:channel, 'nvim_command', a:cmd)
   catch
