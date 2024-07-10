@@ -1,6 +1,17 @@
 let g:last_line = ""
 let g:exit_code = 0
 let g:cwd_backup = ""
+let g:env_backup = {}
+
+function Backup_Environ()
+  let g:env_backup = rpcrequest(g:channel, 'nvim_call_function', 'environ', [])
+endfunction
+
+function Setup_Environ(env)
+  call rpcrequest(g:channel, 'nvim_call_function', 'nvim_set_var', ['tmp_env', a:env])
+  call rpcrequest(g:channel, 'nvim_call_function', 'nvim_eval', ['foreach(g:tmp_env, {k,v->execute("let $"..k.."=\""..v.."\"")})'])
+  call rpcrequest(g:channel, 'nvim_call_function', 'nvim_del_var', ['tmp_env'])
+endfunction
 
 function Maybe_Restore_Cwd ()
   if g:cwd_backup == rpcrequest(g:channel, 'nvim_call_function', 'getcwd', [])
@@ -18,6 +29,7 @@ endfunction
 
 function Do_Close ()
   call Maybe_Restore_Cwd()
+  call Setup_Environ(g:env_backup)
   call chanclose(g:channel)
   execute("cq! " .. g:exit_code)
 endfunction
@@ -42,6 +54,8 @@ function! Ileum (pwd, addr, cmd) abort
   let g:cwd_backup = rpcrequest(g:channel, 'nvim_call_function', 'getcwd', [])
   let r = rpcrequest(g:channel, 'nvim_command', 'noautocmd cd ' .. fnameescape(a:pwd))
   try
+    call Backup_Environ()
+    call Setup_Environ(environ())
     let r = rpcrequest(g:channel, 'nvim_command', a:cmd)
   catch
     echo v:exception
